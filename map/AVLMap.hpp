@@ -29,7 +29,7 @@ class AVLTree
     Node* RotateLeft(Node *p);
     Node* balance(Node *p);
     Node* insert(Node *p,const std::string& key,const std::string& value);
-    Node* find(Node *p,const std::string& key);
+    Node* find(Node *p,const std::string& key)const;
     Node* MostPopular(Node *p,Node *best)const;
     Node* findmin(Node *p);
     Node* removemin(Node* p);
@@ -40,7 +40,7 @@ class AVLTree
 
     public:
     bool remove(const std::string& key);
-    bool get(const std::string& key,std::string& value);
+    bool get(const std::string& key,std::string& value)const;
     bool getMostPopular(std::string& key,std::string& value,int& count)const;
     std::string& operator[](const std::string& key);
     std::vector<std::pair<std::string, std::string>> find_by_word(const std::string& word) const;

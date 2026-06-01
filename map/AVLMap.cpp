@@ -117,7 +117,7 @@ Node* AVLTree::insert(Node *p,const std::string& key,const std::string& value)
     return balance(p);
 }
 
-Node* AVLTree::find(Node *p,const std::string& key)
+Node* AVLTree::find(Node *p,const std::string& key)const
 {
     if(!p)
     {
@@ -176,7 +176,7 @@ Node* AVLTree::remove(Node* p,const std::string& key)
     return balance(p);
 }
 
-bool AVLTree::get(const std::string& key,std::string& value)
+bool AVLTree::get(const std::string& key,std::string& value)const
 {
     Node* found = find(root,key);
 

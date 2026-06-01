@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <cmath>
 
-Node::Node(const std::string& v):value(v),
+ExprNode::ExprNode(const std::string& v):value(v),
                                  left(nullptr),
                                  right(nullptr){};
          
@@ -15,7 +15,11 @@ ExpressionTree::~ExpressionTree()
     clear(root);
 }
 
-void ExpressionTree::clear(Node* node)
+void ExpressionTree::setVariable(const std::string& name,const std::string& value)
+{
+    variables[name] = value;
+}
+void ExpressionTree::clear(ExprNode* node)
 {
     if(!node)return;
 
@@ -77,16 +81,27 @@ bool ExpressionTree::stringToInt(const std::string& token,int& v)const
     return true;
 }
 
-bool ExpressionTree::evaluate(Node* node,int& result)const
+bool ExpressionTree::evaluate(ExprNode* node,int& result)const
 {
     if(node==nullptr)
     {
         return false;
     }
-
+    
     if(!isOperator(node->value))
     {
-        return stringToInt(node->value,result);
+        if(isNumber(node->value))
+        {
+            return stringToInt(node->value,result);
+        }
+        std::string result_string;
+        if(!variables.get(node->value,result_string))
+        {
+            return false;
+        }
+
+        return stringToInt(result_string,result);
+
     }
 
     int leftvalue;
@@ -128,6 +143,8 @@ bool ExpressionTree::evaluate(Node* node,int& result)const
 
     if(node->value == "^")
     {
+        if(rightvalue<0)return false;
+        
         result = static_cast<int>(std::pow(leftvalue,rightvalue));
         return true;
     }
@@ -142,7 +159,7 @@ bool ExpressionTree::evaluate(int &result)const
     return evaluate(root,result);
 }
 
-void ExpressionTree::clearStack(std::stack<Node*>& stack)
+void ExpressionTree::clearStack(std::stack<ExprNode*>& stack)
 {
     while(!stack.empty())
     {
@@ -155,7 +172,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
     clear(root);
     root = nullptr;
 
-    std::stack<Node*> stack;
+    std::stack<ExprNode*> stack;
     for(int i=0;i<tokens.size();i++)
     {
         if(isOperator(tokens[i]))
@@ -166,13 +183,13 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
                 return false;
             }
 
-            Node* right = stack.top();
+            ExprNode* right = stack.top();
             stack.pop();
 
-            Node* left = stack.top();
+            ExprNode* left = stack.top();
             stack.pop();
 
-            Node* operationNode = new Node(tokens[i]);
+            ExprNode* operationNode = new ExprNode(tokens[i]);
             operationNode->left = left;
             operationNode->right = right;
 
@@ -180,13 +197,8 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
             stack.push(operationNode);
         }
         else{
-            if (!isNumber(tokens[i]))
-            {
-                clearStack(stack);
-                return false;
-            }
 
-            Node* numberNode = new Node(tokens[i]);
+            ExprNode* numberNode = new ExprNode(tokens[i]);
             stack.push(numberNode);
         }
     }
@@ -200,7 +212,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
     return true;
 }
 
-int ExpressionTree::height(Node* node)const
+int ExpressionTree::height(ExprNode* node)const
 {
     if(node == nullptr)
     {
@@ -215,7 +227,7 @@ int ExpressionTree::height()const
     return height(root);
 }
 
-int ExpressionTree::operators_count(Node* node)const
+int ExpressionTree::operators_count(ExprNode* node)const
 {
     if(node==nullptr)
     {
@@ -232,7 +244,7 @@ int ExpressionTree::operators_count()const
     return operators_count(root);
 }
 
-std::string ExpressionTree::getexpr_postfix(Node* node)const
+std::string ExpressionTree::getexpr_postfix(ExprNode* node)const
 {
     if(node == nullptr)
     {
@@ -247,7 +259,7 @@ std::string ExpressionTree::getexpr_postfix()const
     return getexpr_postfix(root);
 }
 
-std::string ExpressionTree::getexpr_prefix(Node* node)const
+std::string ExpressionTree::getexpr_prefix(ExprNode* node)const
 {
     if(node == nullptr)
     {
@@ -262,7 +274,7 @@ std::string ExpressionTree::getexpr_prefix()const
     return getexpr_prefix(root);
 }
 
-std::string ExpressionTree::getexpr_infix(Node* node)const
+std::string ExpressionTree::getexpr_infix(ExprNode* node)const
 {
     if(node==nullptr)
     {
@@ -284,3 +296,4 @@ std::string ExpressionTree::getexpr_infix()const
 {
     return getexpr_infix(root);
 }
+
