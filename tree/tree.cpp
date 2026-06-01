@@ -297,3 +297,51 @@ std::string ExpressionTree::getexpr_infix()const
     return getexpr_infix(root);
 }
 
+bool ExpressionTree::isConstant(ExprNode* node)const
+{
+    if(node == nullptr)
+    {
+        return true;
+    }
+
+    if(!isOperator(node->value))
+    {
+        return isNumber(node->value);
+    }
+
+    return isConstant(node->left) &&
+           isConstant(node->right);
+}
+
+ExprNode* ExpressionTree::simplify(ExprNode* node)
+{
+    if(node==nullptr)
+    {
+        return nullptr;
+    }
+
+    node->left = simplify(node->left);
+    node->right = simplify(node->right);
+
+    if(isOperator(node->value) && isConstant(node))
+    {
+        int result;
+
+        if(evaluate(node,result))
+        {
+            clear(node->left);
+            clear(node->right);
+
+            node->value = std::to_string(result);
+            node->left = nullptr;
+            node->right = nullptr;
+        }
+    }
+    return node;
+}
+
+void ExpressionTree::simplify()
+{
+    root = simplify(root);
+}
+

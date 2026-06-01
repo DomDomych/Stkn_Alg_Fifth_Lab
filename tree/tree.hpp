@@ -17,8 +17,10 @@ class ExprNode
 class ExpressionTree
 {
     private:
-    void clearStack(std::stack<ExprNode*>& stack);
     ExprNode* root;
+    void clearStack(std::stack<ExprNode*>& stack);
+    ExprNode* simplify(ExprNode* node);
+    bool isConstant(ExprNode* node)const;
     void clear(ExprNode* node);
     bool isOperator(const std::string& token)const;
     bool evaluate(ExprNode* node,int& result)const;
@@ -42,6 +44,6 @@ class ExpressionTree
     bool evaluate(int& result) const;
     int operators_count()const;
     int height()const;
-
+    void simplify();
     void setVariable(const std::string& name,const std::string& value);
 };
