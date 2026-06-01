@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 Node::Node(const std::string& v):value(v),
                                  left(nullptr),
@@ -29,7 +30,8 @@ bool ExpressionTree::isOperator(const std::string& token)const
     return token == "+" ||
            token == "-" ||
            token == "*" ||
-           token == "/" ;
+           token == "/" ||
+           token == "^"  ;
 }
 bool ExpressionTree::isNumber(const std::string& token)const
 {
@@ -124,6 +126,12 @@ bool ExpressionTree::evaluate(Node* node,int& result)const
         return true;
     }
 
+    if(node->value == "^")
+    {
+        result = static_cast<int>(std::pow(leftvalue,rightvalue));
+        return true;
+    }
+
     return false;
 }
 
@@ -205,4 +213,21 @@ int ExpressionTree::height(Node* node)const
 int ExpressionTree::height()const
 {
     return height(root);
+}
+
+int ExpressionTree::operators_count(Node* node)const
+{
+    if(node==nullptr)
+    {
+        return 0;
+    }
+
+    return operators_count(node->left)+
+           operators_count(node->right)+
+           (isOperator(node->value)?1:0);
+}
+
+int ExpressionTree::operators_count()const
+{
+    return operators_count(root);
 }
