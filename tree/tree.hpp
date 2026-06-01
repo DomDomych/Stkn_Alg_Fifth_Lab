@@ -23,6 +23,7 @@ class ExpressionTree
     bool evaluate(Node* node,int& result)const;
     bool isNumber(const std::string& s)const;
     bool stringToInt(const std::string& s,int& v) const;
+    int height(Node* node)const;
     public:
     ExpressionTree();
     ~ExpressionTree();
@@ -30,6 +31,5 @@ class ExpressionTree
     bool build_expression_tree(const std::vector<std::string>& v);
     bool evaluate(int& result) const;
 
-
-
+    int height()const;
 };

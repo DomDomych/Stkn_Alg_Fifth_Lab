@@ -1,6 +1,7 @@
 #include "tree.hpp"
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 Node::Node(const std::string& v):value(v),
                                  left(nullptr),
@@ -189,4 +190,19 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
 
     root = stack.top();
     return true;
+}
+
+int ExpressionTree::height(Node* node)const
+{
+    if(node == nullptr)
+    {
+        return 0;
+    }
+
+    return std::max(height(node->left),height(node->right))+1;
+}
+
+int ExpressionTree::height()const
+{
+    return height(root);
 }
