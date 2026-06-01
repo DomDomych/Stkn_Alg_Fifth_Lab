@@ -344,4 +344,80 @@ void ExpressionTree::simplify()
 {
     root = simplify(root);
 }
+int ExpressionTree::priority(const std::string& op) const
+{
+    if (op == "^") return 3;
+    if (op == "*" || op == "/")return 2;
+    if (op == "+" || op == "-")return 1;
+    return 0;
+}
 
+bool ExpressionTree::infix_to_postfix(const std::vector<std::string>& tokens,std::vector<std::string>& postfix)const
+{
+    std::stack<std::string> operators;
+    postfix.clear();
+
+    for(const std::string&  token : tokens)
+    {
+        if(token=="(")
+        {
+            operators.push(token);
+        }
+        else if (token==")")
+        {
+            bool found = false;
+
+            while(!operators.empty())
+            {
+                if(operators.top()=="(")
+                {
+                    found = true;
+                    operators.pop();
+                    break;
+                }
+            postfix.push_back(operators.top());
+            operators.pop();
+            }
+            if(!found)
+            {
+                return false;
+            }
+        }
+        else if(isOperator(token))
+        {
+            while(!operators.empty() && operators.top()!="(" && priority(operators.top())>=priority(token))
+            {
+                postfix.push_back(operators.top());
+                operators.pop();
+            }
+            operators.push(token);
+        }
+        else
+        {
+            postfix.push_back(token);
+        }
+    }
+
+    while(!operators.empty())
+    {
+        if(operators.top()=="(")
+        {
+            return false;
+        }
+        postfix.push_back(operators.top());
+        operators.pop();
+    }
+    return true;
+}
+
+bool ExpressionTree::build_from_infix(const std::vector<std::string>&tokens)
+{
+    std::vector <std::string> postfix;
+
+    if(!infix_to_postfix(tokens,postfix))
+    {
+        return false;
+    }
+
+    return build_expression_tree(postfix);
+}
