@@ -109,11 +109,11 @@ int main()
 
     ExpressionTree tree5;
 
-    std::vector<std::string> expr = {
+    std::vector<std::string> expr1 = {
         "(", "2", "+", "3", ")", "*", "x"
     };
 
-    if (!tree5.build_from_infix(expr))
+    if (!tree5.build_from_infix(expr1))
     {
         std::cout << "Не Удалось Построить" << std::endl;
         return 1;
@@ -149,11 +149,11 @@ int main()
 
     ExpressionTree tree6;
 
-    std::vector<std::string> expr = {
+    std::vector<std::string> expr2 = {
         "-5", "+", "2"
     };
 
-    if (!tree6.build_from_infix(expr))
+    if (!tree6.build_from_infix(expr2))
     {
         std::cout << "Не Удалось Построить" << std::endl;
         return 1;
