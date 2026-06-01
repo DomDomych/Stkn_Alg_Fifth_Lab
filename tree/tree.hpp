@@ -25,10 +25,15 @@ class ExpressionTree
     bool stringToInt(const std::string& s,int& v) const;
     int height(Node* node)const;
     int operators_count(Node* node)const;
+    std::string getexpr_postfix(Node* node)const;
+    std::string getexpr_prefix(Node* node)const;
+    std::string getexpr_infix(Node* node)const;
     public:
     ExpressionTree();
     ~ExpressionTree();
-
+    std::string getexpr_postfix()const;
+    std::string getexpr_prefix()const;
+    std::string getexpr_infix()const;
     bool build_expression_tree(const std::vector<std::string>& v);
     bool evaluate(int& result) const;
 

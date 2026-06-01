@@ -231,3 +231,56 @@ int ExpressionTree::operators_count()const
 {
     return operators_count(root);
 }
+
+std::string ExpressionTree::getexpr_postfix(Node* node)const
+{
+    if(node == nullptr)
+    {
+        return "";
+    }
+
+    return getexpr_postfix(node->left)+getexpr_postfix(node->right)+node->value+" ";
+}
+
+std::string ExpressionTree::getexpr_postfix()const
+{
+    return getexpr_postfix(root);
+}
+
+std::string ExpressionTree::getexpr_prefix(Node* node)const
+{
+    if(node == nullptr)
+    {
+        return "";
+    }
+
+    return node->value+" "+getexpr_prefix(node->left)+getexpr_prefix(node->right);
+}
+
+std::string ExpressionTree::getexpr_prefix()const
+{
+    return getexpr_prefix(root);
+}
+
+std::string ExpressionTree::getexpr_infix(Node* node)const
+{
+    if(node==nullptr)
+    {
+        return "";
+    }
+
+    if(!isOperator(node->value))
+    {
+        return node->value;
+    }
+    return "("+
+            getexpr_infix(node->left)+
+            " "+node->value+" "+
+            getexpr_infix(node->right)+
+            ")";
+}
+
+std::string ExpressionTree::getexpr_infix()const
+{
+    return getexpr_infix(root);
+}
