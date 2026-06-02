@@ -3,9 +3,16 @@
 #include <algorithm>
 #include <cmath>
 
-ExprNode::ExprNode(const std::string& v):value(v),
-                                 left(nullptr),
-                                 right(nullptr){};
+NumberNode::NumberNode(int value):value(value){};
+
+BinaryOperatorNode::BinaryOperatorNode(const std::string& op,
+                                       ExprNode* left,
+                                       ExprNode* right):
+                                       op(op),left(left),right(right){};
+
+VariableNode::VariableNode(const std::string& name):name(name){};
+
+
          
 ExpressionTree::ExpressionTree():root(nullptr){};
 
@@ -18,13 +25,11 @@ void ExpressionTree::setVariable(const std::string& name,const std::string& valu
 {
     variables[name] = value;
 }
+
 void ExpressionTree::clear(ExprNode* node)
 {
     if(!node)return;
 
-
-    clear(node->left);
-    clear(node->right);
     delete node;
 }
 
@@ -36,6 +41,7 @@ bool ExpressionTree::isOperator(const std::string& token)const
            token == "/" ||
            token == "^"  ;
 }
+
 bool ExpressionTree::isNumber(const std::string& token)const
 {
     if(token.empty())return false;
@@ -80,83 +86,54 @@ bool ExpressionTree::stringToInt(const std::string& token,int& v)const
     return true;
 }
 
-bool ExpressionTree::evaluate(ExprNode* node,int& result)const
+int NumberNode::evaluate(const VariableStorage&) const
 {
-    if(node==nullptr)
-    {
-        return false;
-    }
-    
-    if(!isOperator(node->value))
-    {
-        if(isNumber(node->value))
-        {
-            return stringToInt(node->value,result);
-        }
-        std::string result_string;
-        if(!variables.get(node->value,result_string))
-        {
-            return false;
-        }
-
-        return stringToInt(result_string,result);
-
-    }
-
-    int leftvalue;
-    int rightvalue;
-
-    if(!evaluate(node->left,leftvalue))
-    {
-        return false;
-    }
-
-    if(!evaluate(node->right,rightvalue))
-    {
-        return false;
-    }
-
-    if (node->value == "+") {
-        result = leftvalue + rightvalue;
-        return true;
-    }
-
-    if (node->value == "-") {
-        result = leftvalue - rightvalue;
-        return true;
-    }
-
-    if (node->value == "*") {
-        result = leftvalue * rightvalue;
-        return true;
-    }
-
-    if (node->value == "/") {
-        if (rightvalue == 0) {
-            return false;
-        }
-
-        result = leftvalue / rightvalue;
-        return true;
-    }
-
-    if(node->value == "^")
-    {
-        if(rightvalue<0)return false;
-        
-        result = static_cast<int>(std::pow(leftvalue,rightvalue));
-        return true;
-    }
-
-    return false;
+    return value;
 }
 
-bool ExpressionTree::evaluate(int &result)const
+int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
+{
+    if(op=="-")
+    {
+        return left->evaluate(Storage)+right->evaluate(Storage);
+    }
+
+    if(op=="-")
+    {
+        return left->evaluate(Storage)-right->evaluate(Storage);
+    }
+
+    if(op=="/")
+    {
+        return left->evaluate(Storage)*right->evaluate(Storage);
+    }
+    
+    if(op=="/")
+    {
+        return left->evaluate(Storage)/right->evaluate(Storage);
+    }
+    if(op=="^")
+    {
+        return pow(left->evaluate(Storage),right->evaluate(Storage));
+    }
+}
+
+int VariableNode::evaluate(const VariableStorage& Storage)const
+{
+    std::string res;
+    Storage.get(name,res);
+    int result = stoi(res);
+    return result;
+}
+
+
+bool ExpressionTree::evaluate(int &result,const VariableStorage& Storage)const
 {
     if(root == nullptr)return false;
 
-    return evaluate(root,result);
+    return root->evaluate(Storage);
 }
+
 
 void ExpressionTree::clearStack(std::stack<ExprNode*>& stack)
 {
@@ -166,6 +143,7 @@ void ExpressionTree::clearStack(std::stack<ExprNode*>& stack)
         stack.pop();
     }
 }
+
 bool ExpressionTree::build_expression_tree(const std::vector<std::string>& tokens)
 {
     clear(root);
@@ -188,7 +166,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
             ExprNode* left = stack.top();
             stack.pop();
 
-            ExprNode* operationNode = new ExprNode(tokens[i]);
+            ExprNode* operationNode = new BinaryOperatorNode(tokens[i]);
             operationNode->left = left;
             operationNode->right = right;
 
