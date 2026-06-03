@@ -1,4 +1,4 @@
-    #pragma once
+#pragma once
 
 #include "AVLMap.hpp"
 #include <string>
@@ -25,7 +25,7 @@ public:
 
     virtual bool isConstant() const = 0;
 
-    virtual std::unique_ptr <ExprNode> simplify(const VariableStorage&) = 0;
+    virtual std::unique_ptr <ExprNode> simplified(const VariableStorage&) const = 0;
 };
 
 class NumberNode : public ExprNode
@@ -45,7 +45,7 @@ public:
     int operatorsCount() const override;
     bool isConstant()const override;
 
-    std::unique_ptr <ExprNode> simplify(const VariableStorage&) override;
+    std::unique_ptr <ExprNode> simplified(const VariableStorage&) const override;
 };
 
 class BinaryOperatorNode : public ExprNode
@@ -58,8 +58,8 @@ private:
     int priority() const;
 public:
     BinaryOperatorNode(const std::string&,
-                       std::unique_ptr <ExprNode>,
-                       std::unique_ptr <ExprNode>);
+                       std::unique_ptr <ExprNode> left,
+                       std::unique_ptr <ExprNode> right);
     //~BinaryOperatorNode() override;
 
     int evaluate(const VariableStorage&) const override;
@@ -72,7 +72,7 @@ public:
     int operatorsCount() const override;
     bool isConstant() const override;
 
-    std::unique_ptr <ExprNode> simplify(const VariableStorage&) override;
+    std::unique_ptr <ExprNode> simplified(const VariableStorage&)const override;
 };
 
 class VariableNode : public ExprNode
@@ -92,7 +92,7 @@ public:
     int operatorsCount() const override;
     bool isConstant() const override;
 
-    std::unique_ptr <ExprNode> simplify(const VariableStorage&) override;
+    std::unique_ptr <ExprNode> simplified(const VariableStorage&)const override;
 };  
 
 class ExpressionTree
@@ -100,7 +100,6 @@ class ExpressionTree
 private:
     std::unique_ptr <ExprNode> root;
 
-    bool isConstant(ExprNode *node) const;
     bool isOperator(const std::string &token) const;
     bool isNumber(const std::string &s) const;  
     bool stringToInt(const std::string &s, int &v) const;
@@ -109,14 +108,14 @@ private:
 
 public:
     ExpressionTree();
-    ~ExpressionTree();
+    ~ExpressionTree()=default;
     ExpressionTree(const ExpressionTree &) = delete;
     ExpressionTree &operator=(const ExpressionTree &) = delete;
     std::string getexpr_postfix() const;
     std::string getexpr_prefix() const;
     std::string getexpr_infix() const;
     bool build_expression_tree(const std::vector<std::string> &v);
-    bool evaluate(int &result,const VariableStorage& Storage) const;
+    bool evaluate(int &result) const;
     bool build_from_infix(const std::vector<std::string> &tokens);
     int operators_count() const;
     int height() const;
