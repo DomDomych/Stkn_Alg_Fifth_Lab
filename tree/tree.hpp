@@ -104,7 +104,8 @@ private:
     bool isNumber(const std::string &s) const;  
     bool stringToInt(const std::string &s, int &v) const;
     bool infix_to_postfix(const std::vector<std::string> &tokens, std::vector<std::string> &postfix) const;
-    VariableStorage variables;
+    int priority(const std::string& op)const;
+    VariableStorage Storage ;
 
 public:
     ExpressionTree();

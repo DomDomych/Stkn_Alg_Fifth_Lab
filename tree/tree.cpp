@@ -183,7 +183,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
         else
         {
             stack.push(
-                std::make_unique<VariableNode>(stoi(tokens[i])));
+                std::make_unique<VariableNode>(tokens[i]));
         }
     }
     if(stack.size()!=1)
@@ -319,8 +319,21 @@ std::unique_ptr <ExprNode> VariableNode::simplified(const VariableStorage& Stora
 
 std::unique_ptr<ExprNode> BinaryOperatorNode::simplified(const VariableStorage& Storage)const
 {
-    return;
+    auto newLeft = left->simplified(Storage);
+    auto newRight = right->simplified(Storage);
+
+    auto node = std::make_unique<BinaryOperatorNode>(op,std::move(newLeft),std::move(newRight));
+
+    if(node->isConstant())
+    {
+        int result = node->evaluate(Storage);
+        return std::make_unique<NumberNode>(result);
+    }
+
+    return node;
 }
+
+
 int ExpressionTree::priority(const std::string& op) const
 {
     if (op == "^") return 3;
