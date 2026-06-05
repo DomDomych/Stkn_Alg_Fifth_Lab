@@ -2,30 +2,29 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <stack>
+#include <memory>
 
-ExprNode::ExprNode(const std::string& v):value(v),
-                                 left(nullptr),
-                                 right(nullptr){};
+NumberNode::NumberNode(int value):value(value){};
+
+BinaryOperatorNode::BinaryOperatorNode(const std::string& op,
+                                       std::unique_ptr <ExprNode> left,
+                                       std::unique_ptr <ExprNode> right):
+                                       op(op)
+{
+    this->left = std::move(left);
+    this->right = std::move(right);
+}
+
+VariableNode::VariableNode(const std::string& name):name(name){};
+
+
          
 ExpressionTree::ExpressionTree():root(nullptr){};
 
-ExpressionTree::~ExpressionTree()
-{
-    clear(root);
-}
-
 void ExpressionTree::setVariable(const std::string& name,const std::string& value)
 {
-    variables[name] = value;
-}
-void ExpressionTree::clear(ExprNode* node)
-{
-    if(!node)return;
-
-
-    clear(node->left);
-    clear(node->right);
-    delete node;
+    Storage[name] = value;
 }
 
 bool ExpressionTree::isOperator(const std::string& token)const
@@ -36,6 +35,7 @@ bool ExpressionTree::isOperator(const std::string& token)const
            token == "/" ||
            token == "^"  ;
 }
+
 bool ExpressionTree::isNumber(const std::string& token)const
 {
     if(token.empty())return false;
@@ -80,268 +80,274 @@ bool ExpressionTree::stringToInt(const std::string& token,int& v)const
     return true;
 }
 
-bool ExpressionTree::evaluate(ExprNode* node,int& result)const
+int NumberNode::evaluate(const VariableStorage&) const
 {
-    if(node==nullptr)
+    return value;
+}
+
+int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
+{
+    if(op=="+")
     {
-        return false;
+        return left->evaluate(Storage)+right->evaluate(Storage);
+    }
+
+    if(op=="-")
+    {
+        return left->evaluate(Storage)-right->evaluate(Storage);
+    }
+
+    if(op=="*")
+    {
+        return left->evaluate(Storage)*right->evaluate(Storage);
     }
     
-    if(!isOperator(node->value))
+    if(op=="/")
     {
-        if(isNumber(node->value))
+        if(right->evaluate(Storage) == 0)
         {
-            return stringToInt(node->value,result);
+            return 0;
         }
-        std::string result_string;
-        if(!variables.get(node->value,result_string))
-        {
-            return false;
-        }
-
-        return stringToInt(result_string,result);
-
+        return left->evaluate(Storage)/right->evaluate(Storage);
     }
-
-    int leftvalue;
-    int rightvalue;
-
-    if(!evaluate(node->left,leftvalue))
+    if(op=="^")
     {
-        return false;
+        return static_cast<int>(pow(left->evaluate(Storage),right->evaluate(Storage)));
     }
-
-    if(!evaluate(node->right,rightvalue))
-    {
-        return false;
-    }
-
-    if (node->value == "+") {
-        result = leftvalue + rightvalue;
-        return true;
-    }
-
-    if (node->value == "-") {
-        result = leftvalue - rightvalue;
-        return true;
-    }
-
-    if (node->value == "*") {
-        result = leftvalue * rightvalue;
-        return true;
-    }
-
-    if (node->value == "/") {
-        if (rightvalue == 0) {
-            return false;
-        }
-
-        result = leftvalue / rightvalue;
-        return true;
-    }
-
-    if(node->value == "^")
-    {
-        if(rightvalue<0)return false;
-        
-        result = static_cast<int>(std::pow(leftvalue,rightvalue));
-        return true;
-    }
-
-    return false;
+    return 0;
 }
+
+int VariableNode::evaluate(const VariableStorage& Storage)const
+{
+    std::string res;
+    if(!Storage.get(name,res))
+    {
+        return 0;
+    }
+    int result = stoi(res);
+    return result;
+}
+
 
 bool ExpressionTree::evaluate(int &result)const
 {
     if(root == nullptr)return false;
 
-    return evaluate(root,result);
+    result = root->evaluate(Storage);
+
+    return true;
 }
 
-void ExpressionTree::clearStack(std::stack<ExprNode*>& stack)
+int NumberNode::height()const
 {
-    while(!stack.empty())
-    {
-        clear(stack.top());
-        stack.pop();
-    }
+    return 1;
 }
+
+int VariableNode::height()const
+{
+    return 1;
+}
+
+int BinaryOperatorNode::height()const
+{
+    return std::max(left->height(),right->height())+1;
+}
+
+
 bool ExpressionTree::build_expression_tree(const std::vector<std::string>& tokens)
 {
-    clear(root);
     root = nullptr;
 
-    std::stack<ExprNode*> stack;
+    std::stack<std::unique_ptr<ExprNode>> stack;
     for(int i=0;i<tokens.size();i++)
     {
         if(isOperator(tokens[i]))
         {
             if(stack.size()<2)
             {
-                clearStack(stack);
                 return false;
             }
 
-            ExprNode* right = stack.top();
+            auto right = std::move(stack.top());
             stack.pop();
 
-            ExprNode* left = stack.top();
+            auto left = std::move(stack.top());
             stack.pop();
 
-            ExprNode* operationNode = new ExprNode(tokens[i]);
-            operationNode->left = left;
-            operationNode->right = right;
+            stack.push(
+                std::make_unique<BinaryOperatorNode>(
+                    tokens[i],
+                    std::move(left),
+                    std::move(right)
+                )
+            );
 
-
-            stack.push(operationNode);
         }
-        else{
-
-            ExprNode* numberNode = new ExprNode(tokens[i]);
-            stack.push(numberNode);
+        else if(isNumber(tokens[i]))
+        {
+            stack.push(
+                std::make_unique<NumberNode>(stoi(tokens[i])));
+        }
+        else
+        {
+            stack.push(
+                std::make_unique<VariableNode>(tokens[i]));
         }
     }
     if(stack.size()!=1)
     {
-        clearStack(stack);
         return false;
     }
 
-    root = stack.top();
+    root = std::move(stack.top());
+    stack.pop();
     return true;
-}
-
-int ExpressionTree::height(ExprNode* node)const
-{
-    if(node == nullptr)
-    {
-        return 0;
-    }
-
-    return std::max(height(node->left),height(node->right))+1;
 }
 
 int ExpressionTree::height()const
 {
-    return height(root);
+    if(root==nullptr)return 0;
+
+    return root->height();
 }
 
-int ExpressionTree::operators_count(ExprNode* node)const
+int NumberNode::operatorsCount()const
 {
-    if(node==nullptr)
-    {
-        return 0;
-    }
+    return 0;
+}
 
-    return operators_count(node->left)+
-           operators_count(node->right)+
-           (isOperator(node->value)?1:0);
+int VariableNode::operatorsCount()const
+{
+    return 0;
+}
+
+int BinaryOperatorNode::operatorsCount()const
+{
+    return left->operatorsCount()+right->operatorsCount()+1;
 }
 
 int ExpressionTree::operators_count()const
 {
-    return operators_count(root);
+    if(root==nullptr)return 0;
+
+    return root->operatorsCount();
+}
+std::string NumberNode::toPostfix()const
+{
+    return std::to_string(value);
+}
+std::string NumberNode::toInfix()const
+{
+    return std::to_string(value);
+}
+std::string NumberNode::toPrefix()const
+{
+    return std::to_string(value);
 }
 
-std::string ExpressionTree::getexpr_postfix(ExprNode* node)const
-{
-    if(node == nullptr)
-    {
-        return "";
-    }
 
-    return getexpr_postfix(node->left)+getexpr_postfix(node->right)+node->value+" ";
+std::string VariableNode::toPostfix()const
+{
+    return name;
+}
+std::string VariableNode::toPrefix()const
+{
+    return name;
+}
+std::string VariableNode::toInfix()const
+{
+    return name;
+}
+
+std::string BinaryOperatorNode::toPostfix()const
+{
+    std::string result = left->toPostfix() + " "+
+                         right->toPostfix() + " "+
+                         op + " ";
+    return result;
+}
+
+std::string BinaryOperatorNode::toInfix()const
+{
+    std::string result = "( " + left->toInfix() + " "+
+                         op + " " +
+                         right->toInfix()+" )";
+    return result;
+}
+
+std::string BinaryOperatorNode::toPrefix()const
+{
+    std::string result = op + " " + 
+                         left->toPrefix() + " "+
+                         right->toPrefix() + " ";
+                         
+    return result;
 }
 
 std::string ExpressionTree::getexpr_postfix()const
 {
-    return getexpr_postfix(root);
+
+    return root?root->toPostfix():"";
 }
 
-std::string ExpressionTree::getexpr_prefix(ExprNode* node)const
-{
-    if(node == nullptr)
-    {
-        return "";
-    }
-
-    return node->value+" "+getexpr_prefix(node->left)+getexpr_prefix(node->right);
-}
 
 std::string ExpressionTree::getexpr_prefix()const
 {
-    return getexpr_prefix(root);
-}
-
-std::string ExpressionTree::getexpr_infix(ExprNode* node)const
-{
-    if(node==nullptr)
-    {
-        return "";
-    }
-
-    if(!isOperator(node->value))
-    {
-        return node->value;
-    }
-    return "("+
-            getexpr_infix(node->left)+
-            " "+node->value+" "+
-            getexpr_infix(node->right)+
-            ")";
+    return root?root->toPrefix():"";
 }
 
 std::string ExpressionTree::getexpr_infix()const
 {
-    return getexpr_infix(root);
+    return root?root->toInfix():"";
 }
 
-bool ExpressionTree::isConstant(ExprNode* node)const
+bool NumberNode::isConstant() const
 {
-    if(node == nullptr)
-    {
-        return true;
-    }
-
-    if(!isOperator(node->value))
-    {
-        return isNumber(node->value);
-    }
-
-    return isConstant(node->left) &&
-           isConstant(node->right);
+    return true;
 }
 
-ExprNode* ExpressionTree::simplify(ExprNode* node)
+bool VariableNode::isConstant() const
 {
-    if(node==nullptr)
+    return false;
+}
+
+bool BinaryOperatorNode::isConstant() const
+{
+    return left->isConstant() && right->isConstant();
+}
+
+std::unique_ptr <ExprNode> NumberNode::simplified(const VariableStorage&) const
+{
+    return std::make_unique<NumberNode>(value);
+}
+
+std::unique_ptr <ExprNode> VariableNode::simplified(const VariableStorage& Storage)const
+{
+    return std::make_unique<VariableNode>(name);
+}
+
+std::unique_ptr<ExprNode> BinaryOperatorNode::simplified(const VariableStorage& Storage)const
+{
+    auto newLeft = left->simplified(Storage);
+    auto newRight = right->simplified(Storage);
+
+    auto node = std::make_unique<BinaryOperatorNode>(op,std::move(newLeft),std::move(newRight));
+
+    if(node->isConstant())
     {
-        return nullptr;
+        int result = node->evaluate(Storage);
+        return std::make_unique<NumberNode>(result);
     }
 
-    node->left = simplify(node->left);
-    node->right = simplify(node->right);
-
-    if(isOperator(node->value) && isConstant(node))
-    {
-        int result;
-
-        if(evaluate(node,result))
-        {
-            clear(node->left);
-            clear(node->right);
-
-            node->value = std::to_string(result);
-            node->left = nullptr;
-            node->right = nullptr;
-        }
-    }
     return node;
 }
 
 void ExpressionTree::simplify()
 {
-    root = simplify(root);
+    if(root)
+    {
+        root = root->simplified(Storage);
+    }
 }
 int ExpressionTree::priority(const std::string& op) const
 {
