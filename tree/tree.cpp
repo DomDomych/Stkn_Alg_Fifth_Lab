@@ -278,18 +278,19 @@ std::string BinaryOperatorNode::toPrefix()const
 
 std::string ExpressionTree::getexpr_postfix()const
 {
-    return root->toPostfix();
+
+    return root?root->toPostfix():"";
 }
 
 
 std::string ExpressionTree::getexpr_prefix()const
 {
-    return root->toPrefix();
+    return root?root->toPrefix():"";
 }
 
 std::string ExpressionTree::getexpr_infix()const
 {
-    return root->toInfix();
+    return root?root->toInfix():"";
 }
 
 bool NumberNode::isConstant() const
