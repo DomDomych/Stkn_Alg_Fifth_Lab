@@ -333,7 +333,13 @@ std::unique_ptr<ExprNode> BinaryOperatorNode::simplified(const VariableStorage& 
     return node;
 }
 
-
+void ExpressionTree::simplify()
+{
+    if(root)
+    {
+        root = root->simplified(Storage);
+    }
+}
 int ExpressionTree::priority(const std::string& op) const
 {
     if (op == "^") return 3;
