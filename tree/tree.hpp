@@ -3,7 +3,6 @@
 #include "AVLMap.hpp"
 #include <string>
 #include <vector>
-#include <stack>
 #include <memory>
 
 
@@ -55,7 +54,6 @@ private:
     std::unique_ptr <ExprNode> left;
     std::unique_ptr <ExprNode> right;
 
-    int priority() const;
 public:
     BinaryOperatorNode(const std::string&,
                        std::unique_ptr <ExprNode> left,

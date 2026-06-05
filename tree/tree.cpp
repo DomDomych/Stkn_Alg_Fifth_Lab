@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <stack>
 #include <memory>
 
 NumberNode::NumberNode(int value):value(value){};
@@ -103,11 +104,15 @@ int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
     
     if(op=="/")
     {
+        if(right->evaluate(Storage) == 0)
+        {
+            return 0;
+        }
         return left->evaluate(Storage)/right->evaluate(Storage);
     }
     if(op=="^")
     {
-        return pow(left->evaluate(Storage),right->evaluate(Storage));
+        return static_cast<int>(pow(left->evaluate(Storage),right->evaluate(Storage)));
     }
     return 0;
 }
@@ -115,7 +120,10 @@ int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
 int VariableNode::evaluate(const VariableStorage& Storage)const
 {
     std::string res;
-    Storage.get(name,res);
+    if(!Storage.get(name,res))
+    {
+        return 0;
+    }
     int result = stoi(res);
     return result;
 }
