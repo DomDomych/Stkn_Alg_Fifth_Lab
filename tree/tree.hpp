@@ -114,7 +114,7 @@ public:
     std::string getexpr_prefix() const;
     std::string getexpr_infix() const;
     bool build_expression_tree(const std::vector<std::string> &v);
-    bool evaluate(int &result) const;
+    void evaluate(int &result) const;
     bool build_from_infix(const std::vector<std::string> &tokens);
     int operators_count() const;
     int height() const;

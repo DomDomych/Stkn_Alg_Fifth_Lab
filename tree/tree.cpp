@@ -4,6 +4,7 @@
 #include <cmath>
 #include <stack>
 #include <memory>
+#include <stdexcept>
 
 NumberNode::NumberNode(int value):value(value){};
 
@@ -104,17 +105,19 @@ int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
     
     if(op=="/")
     {
-        if(right->evaluate(Storage) == 0)
+        int leftValue = left->evaluate(Storage);
+        int rightValue = right->evaluate(Storage);
+        if(rightValue == 0)
         {
-            return 0;
+            throw std::logic_error("Division by zero!");
         }
-        return left->evaluate(Storage)/right->evaluate(Storage);
+        return leftValue/rightValue;
     }
     if(op=="^")
     {
         return static_cast<int>(pow(left->evaluate(Storage),right->evaluate(Storage)));
     }
-    return 0;
+    throw std::logic_error("Operator " + op + " is unknown");   
 }
 
 int VariableNode::evaluate(const VariableStorage& Storage)const
@@ -122,20 +125,22 @@ int VariableNode::evaluate(const VariableStorage& Storage)const
     std::string res;
     if(!Storage.get(name,res))
     {
-        return 0;
-    }
+        throw std::logic_error("Variable "+name+" is not defined");
+    } 
     int result = stoi(res);
     return result;
 }
 
 
-bool ExpressionTree::evaluate(int &result)const
+void ExpressionTree::evaluate(int &result)const
 {
-    if(root == nullptr)return false;
+    if(root == nullptr)
+    {
+        throw std::logic_error("Expression tree is empty");
+    }
 
     result = root->evaluate(Storage);
 
-    return true;
 }
 
 int NumberNode::height()const
