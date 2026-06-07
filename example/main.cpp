@@ -163,7 +163,7 @@ int main()
         "5","2","+","10","*"
     };
 
-    if(tree7.build_from_infix(expr3))
+    if(tree7.build_expression_tree(expr3))
     {
         printTreeInfo(tree7);
     }
