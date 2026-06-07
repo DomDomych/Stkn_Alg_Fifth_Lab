@@ -289,6 +289,8 @@ template <typename Key, typename Value>
 class AVLTree:public AVLTreeCommon<Key,Value>
 {
 public:
+
+    AVLTree() = default;
     AVLTree(const AVLTree &) = delete;
     AVLTree &operator=(const AVLTree &) = delete;
 };
@@ -372,7 +374,7 @@ public:
         find_by_word(this->root, word, found);
         return found;
     }
-
+    AVLTree() = default;
     AVLTree(const AVLTree &) = delete;
     AVLTree &operator=(const AVLTree &) = delete;
 };
