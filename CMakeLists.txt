@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(FifthLab
     example/main.cpp
     tree/tree.cpp
-    map/AVLMap.cpp
 )
 
 target_include_directories(FifthLab PRIVATE
