@@ -339,12 +339,10 @@ std::unique_ptr<ExprNode> BinaryOperatorNode::simplified(const VariableStorage& 
 
 void ExpressionTree::simplify()
 {
-    if(root == nullptr)
+    if(root)
     {
-        throw std::logic_error("Expression Tree is empty");
+        root = root->simplified(Storage);
     }
-
-    root = root->simplified(Storage);
 }
 int ExpressionTree::priority(const std::string& op) const
 {
@@ -422,4 +420,10 @@ bool ExpressionTree::build_from_infix(const std::vector<std::string>&tokens)
     }
 
     return build_expression_tree(postfix);
+}
+
+
+void ExpressionTree::clear()
+{
+    root = nullptr;
 }

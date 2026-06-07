@@ -119,4 +119,5 @@ public:
     int height() const;
     void simplify();
     void setVariable(const std::string &name, const std::string &value);
+    void clear();
 };
