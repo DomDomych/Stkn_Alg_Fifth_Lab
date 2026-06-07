@@ -6,7 +6,7 @@
 #include <memory>
 
 
-using VariableStorage = AVLTree;
+using VariableStorage = AVLTree<std::string,std::string>;
 
 class ExprNode
 {
@@ -58,7 +58,6 @@ public:
     BinaryOperatorNode(const std::string&,
                        std::unique_ptr <ExprNode> left,
                        std::unique_ptr <ExprNode> right);
-    //~BinaryOperatorNode() override;
 
     int evaluate(const VariableStorage&) const override;
 
@@ -100,7 +99,6 @@ private:
 
     bool isOperator(const std::string &token) const;
     bool isNumber(const std::string &s) const;  
-    bool stringToInt(const std::string &s, int &v) const;
     bool infix_to_postfix(const std::vector<std::string> &tokens, std::vector<std::string> &postfix) const;
     int priority(const std::string& op)const;
     VariableStorage Storage ;
@@ -114,10 +112,11 @@ public:
     std::string getexpr_prefix() const;
     std::string getexpr_infix() const;
     bool build_expression_tree(const std::vector<std::string> &v);
-    bool evaluate(int &result) const;
+    void evaluate(int &result) const;
     bool build_from_infix(const std::vector<std::string> &tokens);
     int operators_count() const;
     int height() const;
     void simplify();
     void setVariable(const std::string &name, const std::string &value);
+    void clear();
 };
