@@ -5,6 +5,12 @@
 
 void printTreeInfo(ExpressionTree& tree)
 {
+
+    if(tree.getexpr_infix()=="")
+    {
+        std::cout<<"Дерево Пустое"<<std::endl;
+        return;
+    }
     std::cout << "Infix:   " << tree.getexpr_infix() << std::endl;
     std::cout << "Prefix:  " << tree.getexpr_prefix() << std::endl;
     std::cout << "Postfix: " << tree.getexpr_postfix() << std::endl;
@@ -14,14 +20,8 @@ void printTreeInfo(ExpressionTree& tree)
 
     int result;
 
-    if (tree.evaluate(result))
-    {
-        std::cout << "Результат: " << result << std::endl;
-    }
-    else
-    {
-        std::cout << "Нельзя Посчитать, Неправленное Выражение" << std::endl;
-    }
+    tree.evaluate(result);
+    std::cout << "Результат: " << result << std::endl;
 }
 
 int main()
@@ -74,7 +74,7 @@ int main()
 
     if (!tree3.build_from_infix(variables))
     {
-        std::cout << "Не Удалось Построит" << std::endl;
+        std::cout << "Не Удалось Построить" << std::endl;
         return 1;
     }
     //Задаем Значения Переменных
@@ -86,7 +86,7 @@ int main()
     std::cout << std::endl;
 
 
-    std::cout << "=== Пример 4: Оператор ^===" << std::endl;
+    std::cout << "=== Пример 4: Оператор ^ ===" << std::endl;
 
     ExpressionTree tree4;
 
@@ -105,7 +105,7 @@ int main()
     std::cout << std::endl;
 
 
-    std::cout << "=== Пример 5:  Упрощение===" << std::endl;
+    std::cout << "=== Пример 5:  Упрощение ===" << std::endl;
 
     ExpressionTree tree5;
 
@@ -133,14 +133,8 @@ int main()
 
     int simplified;
 
-    if (tree5.evaluate(simplified))
-    {
-        std::cout << "Result with x = 10: " << simplified << std::endl;
-    }
-    else
-    {
-        std::cout << "Не Удалось Посчитать" << std::endl;
-    }
+    tree5.evaluate(simplified);
+    std::cout << "Result with x = 10: " << simplified << std::endl;
 
     std::cout << std::endl;
 
@@ -160,6 +154,50 @@ int main()
     }
 
     printTreeInfo(tree6);
+
+    std::cout << "=== Пример 7: Очистка Дерева ==="<<std::endl;
+
+    ExpressionTree tree7;
+
+    std::vector<std::string> expr3 = {
+        "5","2","+","10","*"
+    };
+
+    if(tree7.build_from_infix(expr3))
+    {
+        printTreeInfo(tree7);
+    }
+
+    std::cout<<"Очистим Дерево и Посмотрим На Результат\n";
+    tree7.clear();
+
+    printTreeInfo(tree7);
+
+
+    std::cout << "=== Пример 8: Некорректное Использование Дерева ===" << std::endl;
+
+    ExpressionTree tree8;
+
+    std::vector<std::string> expr4 = {
+        "5","0","/"
+    };
+
+
+    if(tree8.build_expression_tree(expr4))
+    {
+        std::cout<<"Дерево Удалось Построить!"<<std::endl;
+        std::cout<<"Однако Выражение Не Является Верным Математически"<<std::endl;
+        try
+        {
+            int res;
+            tree8.evaluate(res);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout<<"Мы Поймали Ошибку: "<<e.what()<<std::endl;
+        }
+        
+    }
 
     return 0;
 }

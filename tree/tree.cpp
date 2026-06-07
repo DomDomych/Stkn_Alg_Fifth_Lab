@@ -1,9 +1,11 @@
 #include "tree.hpp"
+#include <iostream>
 #include <string>
 #include <algorithm>
 #include <cmath>
 #include <stack>
 #include <memory>
+#include <stdexcept>
 
 NumberNode::NumberNode(int value):value(value){};
 
@@ -57,29 +59,6 @@ bool ExpressionTree::isNumber(const std::string& token)const
     return true;
 }
 
-bool ExpressionTree::stringToInt(const std::string& token,int& v)const
-{
-    if(!isNumber(token)) return false;
-    
-    v = 0;
-    int sign = 1;
-    int start = 0;
-
-    if(token[0]=='-')
-    {
-        sign = -1;
-        start = 1;
-    }
-    
-    for(int i=start;i<token.size();i++)
-    {
-        v = v*10 + (token[i]-'0');
-    }
-
-    v *=sign;
-    return true;
-}
-
 int NumberNode::evaluate(const VariableStorage&) const
 {
     return value;
@@ -87,34 +66,36 @@ int NumberNode::evaluate(const VariableStorage&) const
 
 int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
 {
+    int leftValue = left->evaluate(Storage);
+    int rightValue = right->evaluate(Storage);
     if(op=="+")
     {
-        return left->evaluate(Storage)+right->evaluate(Storage);
+        return leftValue+rightValue;
     }
 
     if(op=="-")
     {
-        return left->evaluate(Storage)-right->evaluate(Storage);
+        return leftValue-rightValue;
     }
 
     if(op=="*")
     {
-        return left->evaluate(Storage)*right->evaluate(Storage);
+        return leftValue*rightValue;
     }
     
     if(op=="/")
     {
-        if(right->evaluate(Storage) == 0)
+        if(rightValue == 0)
         {
-            return 0;
+            throw std::logic_error("Division by zero!");
         }
-        return left->evaluate(Storage)/right->evaluate(Storage);
+        return leftValue/rightValue;
     }
     if(op=="^")
     {
-        return static_cast<int>(pow(left->evaluate(Storage),right->evaluate(Storage)));
+        return static_cast<int>(pow(leftValue,rightValue));
     }
-    return 0;
+    throw std::logic_error("Operator " + op + " is unknown");   
 }
 
 int VariableNode::evaluate(const VariableStorage& Storage)const
@@ -122,20 +103,34 @@ int VariableNode::evaluate(const VariableStorage& Storage)const
     std::string res;
     if(!Storage.get(name,res))
     {
-        return 0;
+        throw std::logic_error("Variable "+name+" is not defined");
+    } 
+
+    try
+    {
+        return std::stoi(res);
     }
-    int result = stoi(res);
-    return result;
+    catch(const std::invalid_argument& e)
+    {
+        throw std::logic_error("Variable "+name+" is not a valid integer");
+    }
+
+    catch(const std::out_of_range& e)
+    {
+        throw std::logic_error("Variable "+name+" is out of range");
+    }
 }
 
 
-bool ExpressionTree::evaluate(int &result)const
+void ExpressionTree::evaluate(int &result)const
 {
-    if(root == nullptr)return false;
+    if(root == nullptr)
+    {
+        throw std::logic_error("Expression Tree is empty");
+    }    
 
     result = root->evaluate(Storage);
 
-    return true;
 }
 
 int NumberNode::height()const
@@ -186,7 +181,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
         else if(isNumber(tokens[i]))
         {
             stack.push(
-                std::make_unique<NumberNode>(stoi(tokens[i])));
+                std::make_unique<NumberNode>(std::stoi(tokens[i])));
         }
         else
         {
@@ -425,4 +420,10 @@ bool ExpressionTree::build_from_infix(const std::vector<std::string>&tokens)
     }
 
     return build_expression_tree(postfix);
+}
+
+
+void ExpressionTree::clear()
+{
+    root = nullptr;
 }
