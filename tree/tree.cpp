@@ -1,4 +1,5 @@
 #include "tree.hpp"
+#include <iostream>
 #include <string>
 #include <algorithm>
 #include <cmath>
@@ -58,29 +59,6 @@ bool ExpressionTree::isNumber(const std::string& token)const
     return true;
 }
 
-bool ExpressionTree::stringToInt(const std::string& token,int& v)const
-{
-    if(!isNumber(token)) return false;
-    
-    v = 0;
-    int sign = 1;
-    int start = 0;
-
-    if(token[0]=='-')
-    {
-        sign = -1;
-        start = 1;
-    }
-    
-    for(int i=start;i<token.size();i++)
-    {
-        v = v*10 + (token[i]-'0');
-    }
-
-    v *=sign;
-    return true;
-}
-
 int NumberNode::evaluate(const VariableStorage&) const
 {
     return value;
@@ -88,25 +66,25 @@ int NumberNode::evaluate(const VariableStorage&) const
 
 int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
 {
+    int leftValue = left->evaluate(Storage);
+    int rightValue = right->evaluate(Storage);
     if(op=="+")
     {
-        return left->evaluate(Storage)+right->evaluate(Storage);
+        return leftValue+rightValue;
     }
 
     if(op=="-")
     {
-        return left->evaluate(Storage)-right->evaluate(Storage);
+        return leftValue-rightValue;
     }
 
     if(op=="*")
     {
-        return left->evaluate(Storage)*right->evaluate(Storage);
+        return leftValue*rightValue;
     }
     
     if(op=="/")
     {
-        int leftValue = left->evaluate(Storage);
-        int rightValue = right->evaluate(Storage);
         if(rightValue == 0)
         {
             throw std::logic_error("Division by zero!");
@@ -115,7 +93,7 @@ int BinaryOperatorNode::evaluate(const VariableStorage& Storage) const
     }
     if(op=="^")
     {
-        return static_cast<int>(pow(left->evaluate(Storage),right->evaluate(Storage)));
+        return static_cast<int>(pow(leftValue,rightValue));
     }
     throw std::logic_error("Operator " + op + " is unknown");   
 }
@@ -127,8 +105,20 @@ int VariableNode::evaluate(const VariableStorage& Storage)const
     {
         throw std::logic_error("Variable "+name+" is not defined");
     } 
-    int result = stoi(res);
-    return result;
+
+    try
+    {
+        return std::stoi(res);
+    }
+    catch(const std::invalid_argument& e)
+    {
+        throw std::logic_error("Variable "+name+" is not a valid integer");
+    }
+
+    catch(const std::out_of_range& e)
+    {
+        throw std::logic_error("Variable "+name+" is out of range");
+    }
 }
 
 
@@ -136,8 +126,8 @@ void ExpressionTree::evaluate(int &result)const
 {
     if(root == nullptr)
     {
-        throw std::logic_error("Expression tree is empty");
-    }
+        throw std::logic_error("Expression Tree is empty");
+    }    
 
     result = root->evaluate(Storage);
 
@@ -191,7 +181,7 @@ bool ExpressionTree::build_expression_tree(const std::vector<std::string>& token
         else if(isNumber(tokens[i]))
         {
             stack.push(
-                std::make_unique<NumberNode>(stoi(tokens[i])));
+                std::make_unique<NumberNode>(std::stoi(tokens[i])));
         }
         else
         {
@@ -349,10 +339,12 @@ std::unique_ptr<ExprNode> BinaryOperatorNode::simplified(const VariableStorage& 
 
 void ExpressionTree::simplify()
 {
-    if(root)
+    if(root == nullptr)
     {
-        root = root->simplified(Storage);
+        throw std::logic_error("Expression Tree is empty");
     }
+
+    root = root->simplified(Storage);
 }
 int ExpressionTree::priority(const std::string& op) const
 {

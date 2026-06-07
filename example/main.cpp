@@ -14,14 +14,8 @@ void printTreeInfo(ExpressionTree& tree)
 
     int result;
 
-    if (tree.evaluate(result))
-    {
-        std::cout << "Результат: " << result << std::endl;
-    }
-    else
-    {
-        std::cout << "Нельзя Посчитать, Неправленное Выражение" << std::endl;
-    }
+    tree.evaluate(result);
+    std::cout << "Результат: " << result << std::endl;
 }
 
 int main()
@@ -74,7 +68,7 @@ int main()
 
     if (!tree3.build_from_infix(variables))
     {
-        std::cout << "Не Удалось Построит" << std::endl;
+        std::cout << "Не Удалось Построить" << std::endl;
         return 1;
     }
     //Задаем Значения Переменных
@@ -86,7 +80,7 @@ int main()
     std::cout << std::endl;
 
 
-    std::cout << "=== Пример 4: Оператор ^===" << std::endl;
+    std::cout << "=== Пример 4: Оператор ^ ===" << std::endl;
 
     ExpressionTree tree4;
 
@@ -105,7 +99,7 @@ int main()
     std::cout << std::endl;
 
 
-    std::cout << "=== Пример 5:  Упрощение===" << std::endl;
+    std::cout << "=== Пример 5:  Упрощение ===" << std::endl;
 
     ExpressionTree tree5;
 
@@ -133,14 +127,8 @@ int main()
 
     int simplified;
 
-    if (tree5.evaluate(simplified))
-    {
-        std::cout << "Result with x = 10: " << simplified << std::endl;
-    }
-    else
-    {
-        std::cout << "Не Удалось Посчитать" << std::endl;
-    }
+    tree5.evaluate(simplified);
+    std::cout << "Result with x = 10: " << simplified << std::endl;
 
     std::cout << std::endl;
 
