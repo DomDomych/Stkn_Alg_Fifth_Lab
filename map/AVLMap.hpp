@@ -204,14 +204,19 @@ protected:
         print(p->right, number);
     }
 
+    AVLTreeBase():root(nullptr){}
+    ~AVLTreeBase()
+    {
+        clear(root);
+    }
 };
 
-template <typename Key, typename Value>
-class AVLTree:public AVLTreeBase<Key,Value>
+template<typename Key,typename Value>
+class AVLTreeCommon : public AVLTreeBase<Key,Value>
 {
-using Node = typename AVLTreeBase<Key,Value>::Node;
 
-public:
+    using Node = typename AVLTreeBase<Key,Value>::Node;
+    public:
     bool remove(const Key &key)
     {
         if (!this->find(this->root, key))
@@ -265,7 +270,7 @@ public:
     void print() const
     {
         int number = 1;
-        this->print(this->root, number);
+        AVLTreeBase<Key,Value>::print(this->root, number);
     }
 
     void increment(const Key &key)
@@ -278,25 +283,19 @@ public:
         }
 
     }
+};
 
+template <typename Key, typename Value>
+class AVLTree:public AVLTreeCommon<Key,Value>
+{
+public:
     AVLTree(const AVLTree &) = delete;
     AVLTree &operator=(const AVLTree &) = delete;
-
-    AVLTree()
-    {
-        this->root = nullptr;
-    }
-
-    ~AVLTree()
-    {
-        this->clear(this->root);
-        this->root = nullptr;
-    }
 };
 
 // Specialization for std::string
 template <>
-class AVLTree<std::string, std::string>: public AVLTreeBase<std::string,std::string>
+class AVLTree<std::string, std::string>: public AVLTreeCommon<std::string,std::string>
 {
 
 using Node = typename AVLTreeBase<std::string,std::string>::Node; 
@@ -367,20 +366,6 @@ private:
 
 public:
 
-    bool getMostPopular(std::string &key, std::string &value, int &count) const
-    {
-        Node *best = this->mostPopular(this->root, nullptr);
-
-        if (!best)
-            return false;
-
-        key = best->key;
-        value = best->value;
-        count = best->count;
-
-        return true;
-    }
-
     std::vector<std::pair<std::string, std::string>> find_by_word(const std::string &word) const
     {
         std::vector<std::pair<std::string, std::string>> found;
@@ -390,15 +375,4 @@ public:
 
     AVLTree(const AVLTree &) = delete;
     AVLTree &operator=(const AVLTree &) = delete;
-
-    AVLTree()
-    {
-        this->root = nullptr;
-    }
-
-    ~AVLTree()
-    {
-        this->clear(this->root);
-        this->root = nullptr;
-    }
 };
