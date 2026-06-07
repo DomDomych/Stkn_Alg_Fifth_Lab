@@ -6,7 +6,7 @@
 #include <memory>
 
 
-using VariableStorage = AVLTree;
+using VariableStorage = AVLTree<std::string,std::string>;
 
 class ExprNode
 {
@@ -58,7 +58,6 @@ public:
     BinaryOperatorNode(const std::string&,
                        std::unique_ptr <ExprNode> left,
                        std::unique_ptr <ExprNode> right);
-    //~BinaryOperatorNode() override;
 
     int evaluate(const VariableStorage&) const override;
 
